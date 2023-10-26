@@ -8,7 +8,7 @@ const authenticate = async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: 'https://yumi.to/dashboard'
+      redirectTo: 'https://l.ajm.codes/dashboard'
     }
   })
   if (error) {

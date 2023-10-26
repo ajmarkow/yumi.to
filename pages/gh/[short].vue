@@ -9,7 +9,7 @@ if (!shortIsString.success) {
 }
 const short = shortIsString.data;
 
-useExternalRedirect(`https://github.com/izyumidev/${short}`);
+useExternalRedirect(`https://github.com/ajmarkow/${short}`);
 </script>
 
 <template lang="pug">

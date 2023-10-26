@@ -13,7 +13,7 @@ if (!shortIsString.success) {
 const short = shortIsString.data
 
 const fetchAndRedirect = async () => {
-  const baseUrl = 'https://yumiizumi.com/blog/'
+  const baseUrl = 'https://ajm.codes/blog/'
   const dictionary: Dictionary = await fetch(`${baseUrl}dictionary.json`)
     .then(res => res.json())
     .then(res => DictionarySchema.parse(res))
