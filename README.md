@@ -6,7 +6,7 @@ Your personal URL shortener built with Nuxt, Supabase, Vercel, and TailwindCSS.
 
 ## Features
 
-- 100% free (can be hosted at completely free with Vercel, Supabase, and GitHub) and open-source
+- 100% free! (can be hosted at completely free with Vercel, Supabase, and GitHub) and open-source
 - Create shortlinks via dashboard or an API call
 - Shortlinks can be manually created or automatically generated
 - Use your own domain name
