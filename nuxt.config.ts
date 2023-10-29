@@ -1,6 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
+  mode: "univeral",
+  target: "static",
   modules: [
     "@nuxtjs/supabase",
     "@nuxtjs/tailwindcss",
