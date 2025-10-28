@@ -20,7 +20,7 @@ const authenticate = async () => {
 <template lang="pug">
 ShortlinkList(v-if="user")
 div.flex.flex-col.items-center.justify-center.h-screen(v-if="!user")
-  button(@click="authenticate") Authenticte with GitHub
+  button(@click="authenticate") Authenticate with GitHub
 </template>
 <style lang="scss">
 @import '~/assets/dashboard.scss';
