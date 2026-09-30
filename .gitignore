@@ -18,6 +18,9 @@ logs
 .fleet
 .idea
 
+# SST local state
+.sst
+
 # Local env files
 .env
 .env.*

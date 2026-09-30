@@ -3,14 +3,6 @@ import { nanoid } from "nanoid";
 import { getExact, createLink } from "../utils/links";
 
 function getApiKeyHash(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { Resource } = require("sst");
-    const value = Resource.ApiKeyHash?.value;
-    if (value) return String(value);
-  } catch {
-    /* fall through to env */
-  }
   return process.env.API_KEY_HASH ?? "";
 }
 
