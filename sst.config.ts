@@ -52,6 +52,8 @@ export default $config({
       ],
       domain: {
         name: domainName,
+        // Not managing DNS records yet: at cutover, switch the domainName
+        // constant to "l.ajm.codes" and let SST manage the Route 53 record.
         dns: false,
       },
       environment: {
