@@ -14,6 +14,13 @@ export default defineEventHandler(async (event) => {
   if (!id || typeof id !== "string" || !short || typeof short !== "string") {
     throw createError({ statusCode: 400, message: "Missing parameters!" });
   }
-  await deleteLink(id, short);
+  try {
+    await deleteLink(id, short);
+  } catch (err: any) {
+    if (err?.name === "ConditionalCheckFailedException") {
+      throw createError({ statusCode: 404, message: "Shortlink not found" });
+    }
+    throw err;
+  }
   return { ok: true };
 });

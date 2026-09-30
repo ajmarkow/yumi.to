@@ -7,20 +7,16 @@ import {
   DeleteCommand,
   TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { Resource } from "sst";
 
 function tableName(): string {
-  const raw = process.env.SST_RESOURCE_Shortlinks;
-  if (raw) {
-    try {
-      const parsed = JSON.parse(raw);
-      if (parsed?.name) return String(parsed.name);
-    } catch {
-      /* fall through to TABLE_NAME */
-    }
+  try {
+    return Resource.Shortlinks.name;
+  } catch {
+    const name = process.env.TABLE_NAME;
+    if (!name) throw new Error("Missing DynamoDB table name");
+    return name;
   }
-  const name = process.env.TABLE_NAME;
-  if (!name) throw new Error("Missing DynamoDB table name");
-  return name;
 }
 
 const client = new DynamoDBClient({});

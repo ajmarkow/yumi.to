@@ -1,9 +1,14 @@
 import { timingSafeEqual } from "node:crypto";
 import { nanoid } from "nanoid";
+import { Resource } from "sst";
 import { getExact, createLink } from "../utils/links";
 
 function getApiKeyHash(): string {
-  return process.env.API_KEY_HASH ?? "";
+  try {
+    return String(Resource.ApiKeyHash.value);
+  } catch {
+    return process.env.API_KEY_HASH ?? "";
+  }
 }
 
 export default defineEventHandler(async (event) => {

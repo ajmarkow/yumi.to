@@ -1,7 +1,8 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
-// First deploy target is the staging domain. At cutover change this to
-// "l.ajm.codes" (do not add `override: true` until the real cutover).
+// First deploy target is the staging domain. At cutover, set this to
+// "l.ajm.codes" and use `sst.aws.dns({ override: true })` to replace the
+// production record.
 const domainName = "l-next.ajm.codes";
 
 export default $config({
@@ -18,8 +19,6 @@ export default $config({
     };
   },
   async run() {
-    const accountId = "209255852435";
-
     const table = new sst.aws.Dynamo("Shortlinks", {
       fields: {
         pk: "string",
@@ -52,13 +51,10 @@ export default $config({
       ],
       domain: {
         name: domainName,
-        // Not managing DNS records yet: at cutover, switch the domainName
-        // constant to "l.ajm.codes" and let SST manage the Route 53 record.
-        dns: false,
+        dns: sst.aws.dns(),
       },
       environment: {
         BASE_URL: `https://${domainName}`,
-        AWS_ACCOUNT_ID: accountId,
         NUXT_OAUTH_GITHUB_CLIENT_ID: githubClientId.value,
         NUXT_OAUTH_GITHUB_CLIENT_SECRET: githubClientSecret.value,
         NUXT_SESSION_PASSWORD: sessionPassword.value,

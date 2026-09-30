@@ -1,6 +1,13 @@
+import { Resource } from "sst";
+
 export default defineOAuthGitHubEventHandler({
   async onSuccess(event, { user }) {
-    const adminId = process.env.ADMIN_GITHUB_ID ?? "";
+    let adminId: string;
+    try {
+      adminId = String(Resource.AdminGithubId.value);
+    } catch {
+      adminId = process.env.ADMIN_GITHUB_ID ?? "";
+    }
     if (!adminId || String(user.id) !== String(adminId)) {
       throw createError({ statusCode: 403, message: "Forbidden" });
     }
