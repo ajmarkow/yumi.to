@@ -57,6 +57,9 @@ export default $config({
         BASE_URL: `https://${domainName}`,
         NUXT_OAUTH_GITHUB_CLIENT_ID: githubClientId.value,
         NUXT_OAUTH_GITHUB_CLIENT_SECRET: githubClientSecret.value,
+        // Behind CloudFront the request host is the Lambda URL, so the default
+        // redirect_uri would not match the GitHub OAuth App callback.
+        NUXT_OAUTH_GITHUB_REDIRECT_URL: `https://${domainName}/auth/github`,
         NUXT_SESSION_PASSWORD: sessionPassword.value,
         API_KEY_HASH: apiKeyHash.value,
         ADMIN_GITHUB_ID: adminGithubId.value,
