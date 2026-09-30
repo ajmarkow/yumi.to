@@ -1,15 +1,13 @@
 <script lang="ts" setup>
-import type Database from '@/types/supabase'
-
 defineProps<{
   shortlinks: Shortlink[]
 }>()
 
-const user = useSupabaseUser()
+const { loggedIn } = useUserSession()
 </script>
 
 <template lang="pug">
-li(v-if="user")#add-shortlink
+li(v-if="loggedIn")#add-shortlink
   button.text-green-500.p-1.w-full.rounded-md(@click="startCreating" v-if="!creating") Create Shortlink
   form(@submit.prevent="addShortlink" v-if="creating")
     input(type="text" v-model="short" class="w-full rounded-md p-2 bg-zinc-700 text-white" placeholder="Short")

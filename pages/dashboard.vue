@@ -1,25 +1,16 @@
 <script lang="ts" setup>
-const user = useSupabaseUser()
+const { loggedIn } = useUserSession()
 </script>
 
 <script lang="ts">
 const authenticate = async () => {
-  const supabase = useSupabaseClient()
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'github',
-    options: {
-      redirectTo: 'https://l.ajm.codes/dashboard'
-    }
-  })
-  if (error) {
-    console.error(error)
-  }
+  await navigateTo('/auth/github', { external: true })
 }
 </script>
 
 <template lang="pug">
-ShortlinkList(v-if="user")
-div.flex.flex-col.items-center.justify-center.h-screen(v-if="!user")
+ShortlinkList(v-if="loggedIn")
+div.flex.flex-col.items-center.justify-center.h-screen(v-if="!loggedIn")
   button(@click="authenticate") Authenticate with GitHub
 </template>
 <style lang="scss">

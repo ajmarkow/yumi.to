@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import useExternalRedirect from '@/composables/useExternalRedirect'
-import type Database from '@/types/supabase'
 
 const props = defineProps<{
   destination: string
@@ -11,7 +10,6 @@ if (props.destination) {
   useExternalRedirect(props.destination)
 } else {
   const { params } = useRoute()
-  const supabase = useSupabaseClient<Database>()
 
   const paramsDepth = Object.keys(params).length
 
@@ -28,26 +26,14 @@ if (props.destination) {
       }
     })()
 
-  const { data: exactData } = await supabase
-    .from('shortlinks')
-    .select('*')
-    .eq('short', short)
-    .maybeSingle()
+  const { link } = await $fetch<{ link: string | null }>('/api/resolve', {
+    query: { path: short }
+  })
 
-  if (exactData?.link) {
-    useExternalRedirect(exactData.link)
+  if (link) {
+    useExternalRedirect(link)
   } else {
-    const { data: startsWithData } = await supabase
-      .from('shortlinks')
-      .select('*')
-      .like('short', `${short}%`)
-      .maybeSingle()
-
-    if (startsWithData?.link) {
-      useExternalRedirect(startsWithData.link)
-    } else {
-      useExternalRedirect()
-    }
+    useExternalRedirect()
   }
 }
 </script>

@@ -1,6 +1,15 @@
-import { serverSupabaseClient } from "#supabase/server";
+import { timingSafeEqual } from "node:crypto";
 import { nanoid } from "nanoid";
-import Database from "@/types/supabase";
+import { Resource } from "sst";
+import { getExact, createLink } from "../utils/links";
+
+function getApiKeyHash(): string {
+  try {
+    return String(Resource.ApiKeyHash.value);
+  } catch {
+    return process.env.API_KEY_HASH ?? "";
+  }
+}
 
 export default defineEventHandler(async (event) => {
   try {
@@ -21,35 +30,24 @@ export default defineEventHandler(async (event) => {
       throw new Error("Invalid link! Must be a valid URL!");
     }
 
-    const supabase = await serverSupabaseClient<Database>(event);
+    const expected = getApiKeyHash();
+    const a = Buffer.from(apikey);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      throw new Error("Invalid API key!");
+    }
 
-    let shortExists = true;
     let short = "";
-    while (shortExists) {
-      short = nanoid(2);
-      const { data: existingShortlink } = await supabase
-        .from("shortlinks")
-        .select("*")
-        .eq("short", short)
-        .single();
-      if (!existingShortlink) {
-        shortExists = false;
+    for (;;) {
+      const candidate = nanoid(2);
+      const existing = await getExact(candidate);
+      if (!existing) {
+        short = candidate;
+        break;
       }
     }
 
-    const { data, error } = await supabase.functions.invoke("newShortlink", {
-      body: JSON.stringify({
-        short,
-        link,
-        apiKey: apikey,
-      }),
-    });
-
-    console.log({ data, error });
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    await createLink({ short, link });
 
     return {
       status: 200,
@@ -58,7 +56,7 @@ export default defineEventHandler(async (event) => {
     };
   } catch (err) {
     console.error(err);
-    let error = err as Error;
+    const error = err as Error;
     return {
       status: 500,
       message: `Error! ${error.message}`,

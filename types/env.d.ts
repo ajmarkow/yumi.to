@@ -5,5 +5,6 @@ declare global {
     id: string;
     short: string;
     link: string;
+    created_at?: string;
   }
 }
