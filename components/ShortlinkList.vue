@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import type Database from '@/types/supabase'
-
 const emptyShortlink: Shortlink = {
   id: '',
   short: '',
@@ -9,11 +7,7 @@ const emptyShortlink: Shortlink = {
 
 const query = ref('')
 
-const supabase = useSupabaseClient<Database>()
-const { data } = await supabase
-  .from('shortlinks')
-  .select('*')
-  .order('created_at', { ascending: false })
+const data = await $fetch<Shortlink[]>('/api/links')
 
 const shortlinks = ref(data)
 
@@ -50,20 +44,21 @@ const startEditing = (id: string) => {
   }
 }
 const save = async () => {
-  const supabase = useSupabaseClient<Database>()
-  const { data } = await supabase
-    .from('shortlinks')
-    .update({
-      short: editingShortlink.value.short,
-      link: editingShortlink.value.link
-    })
-    .match({ id: editingShortlink.value.id })
-    .select('*')
-    .single()
-  if (!shortlinks.value || !data) return
+  const updated = await $fetch<Shortlink>(
+    `/api/links/${editingShortlink.value.short}`,
+    {
+      method: 'PUT',
+      body: {
+        id: editingShortlink.value.id,
+        short: editingShortlink.value.short,
+        link: editingShortlink.value.link
+      }
+    }
+  )
+  if (!shortlinks.value || !updated) return
   shortlinks.value = shortlinks.value.map(link => {
-    if (link.id === data.id) {
-      return data
+    if (link.id === updated.id) {
+      return updated
     }
     return link
   })
@@ -71,11 +66,13 @@ const save = async () => {
   setEditing(false)
 }
 const deleteShortlink = async () => {
-  const supabase = useSupabaseClient<Database>()
-  await supabase
-    .from('shortlinks')
-    .delete()
-    .match({ id: editingShortlink.value.id })
+  await $fetch(`/api/links/${editingShortlink.value.short}`, {
+    method: 'DELETE',
+    body: {
+      id: editingShortlink.value.id,
+      short: editingShortlink.value.short
+    }
+  })
   if (!shortlinks.value) return
   shortlinks.value = shortlinks.value.filter(
     link => link.id !== editingShortlink.value.id
@@ -96,17 +93,15 @@ const cancelCreate = () => {
   createLink.value = ''
 }
 const saveCreate = async () => {
-  const supabase = useSupabaseClient<Database>()
-  const { data } = await supabase
-    .from('shortlinks')
-    .insert({
+  const created = await $fetch<Shortlink>('/api/links', {
+    method: 'POST',
+    body: {
       short: createShort.value,
       link: createLink.value
-    })
-    .select('*')
-    .single()
-  if (data && shortlinks.value) {
-    shortlinks.value = [data, ...shortlinks.value]
+    }
+  })
+  if (created && shortlinks.value) {
+    shortlinks.value = [created, ...shortlinks.value]
   }
   toast('Shortlink created')
   cancelCreate()

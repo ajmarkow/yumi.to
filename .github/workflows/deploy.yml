@@ -6,34 +6,50 @@ on:
     branches: main
 
 jobs:
-  deploy:
-    name: Deploy
+  build:
+    name: Build check
     runs-on: ubuntu-latest
-
-    permissions:
-      id-token: write # Needed for auth with Deno Deploy
-      contents: read # Needed to clone the repository
-
     steps:
       - name: Clone repository
-        uses: actions/checkout@v3
-
-      - name: Install Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
+        uses: actions/checkout@v4
 
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: npm
 
-      - name: Build step
-        run: "npm install && NITRO_PRESET=deno-deploy npm run build" # 📝 Update the build command(s) if necessary
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Upload to Deno Deploy
-        uses: denoland/deployctl@v1
+      - name: Build
+        run: npx nuxt build
+
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      id-token: write # Needed for OIDC auth with AWS
+      contents: read # Needed to clone the repository
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
         with:
-          project: "ajm-url"
-          entrypoint: "server/index.ts" # 📝 Update the entrypoint if necessary
-          root: ".output" # 📝 Update the root if necessary
+          node-version: lts/*
+          cache: npm
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy with SST
+        run: npx sst deploy --stage production
