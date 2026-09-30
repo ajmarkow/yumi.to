@@ -1,9 +1,6 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
-// First deploy target is the staging domain. At cutover, set this to
-// "l.ajm.codes" and use `sst.aws.dns({ override: true })` to replace the
-// production record.
-const domainName = "l-next.ajm.codes";
+const domainName = "l.ajm.codes";
 
 export default $config({
   app(input) {
@@ -51,7 +48,7 @@ export default $config({
       ],
       domain: {
         name: domainName,
-        dns: sst.aws.dns(),
+        dns: sst.aws.dns({ override: true }),
       },
       environment: {
         BASE_URL: `https://${domainName}`,
