@@ -1,158 +1,160 @@
 <script lang="ts" setup>
 const emptyShortlink: Shortlink = {
-  id: '',
-  short: '',
-  link: ''
-}
+  id: "",
+  short: "",
+  link: "",
+};
 
-const query = ref('')
+const query = ref("");
 
-const data = await $fetch<Shortlink[]>('/api/links')
+const data = await $fetch<Shortlink[]>("/api/links", {
+  headers: useRequestHeaders(["cookie"]),
+});
 
-const shortlinks = ref(data)
+const shortlinks = ref(data);
 
 const search = () => {
   if (query.value.length > 0 && shortlinks.value && data) {
     shortlinks.value = data.filter(
-      link =>
-        link.short.includes(query.value) || link.link.includes(query.value)
-    )
+      (link) =>
+        link.short.includes(query.value) || link.link.includes(query.value),
+    );
   } else {
-    shortlinks.value = data
+    shortlinks.value = data;
   }
-}
+};
 
 const copy = (text: string) => {
-  navigator.clipboard.writeText(`${window.location.origin}/${text}`)
-  toast('Copied to clipboard')
-}
+  navigator.clipboard.writeText(`${window.location.origin}/${text}`);
+  toast("Copied to clipboard");
+};
 
-const editing = ref(false)
-const editingShortlink = ref<Shortlink>(emptyShortlink)
+const editing = ref(false);
+const editingShortlink = ref<Shortlink>(emptyShortlink);
 const setEditing = (value: boolean) => {
-  editing.value = value
+  editing.value = value;
   if (!value) {
-    editingShortlink.value = emptyShortlink
+    editingShortlink.value = emptyShortlink;
   }
-}
+};
 const startEditing = (id: string) => {
-  setEditing(true)
-  if (!shortlinks.value) return
-  const shortlink = shortlinks.value.find(link => link.id === id)
+  setEditing(true);
+  if (!shortlinks.value) return;
+  const shortlink = shortlinks.value.find((link) => link.id === id);
   if (shortlink) {
-    editingShortlink.value = shortlink
+    editingShortlink.value = shortlink;
   }
-}
+};
 const save = async () => {
   const updated = await $fetch<Shortlink>(
     `/api/links/${editingShortlink.value.short}`,
     {
-      method: 'PUT',
+      method: "PUT",
       body: {
         id: editingShortlink.value.id,
         short: editingShortlink.value.short,
-        link: editingShortlink.value.link
-      }
-    }
-  )
-  if (!shortlinks.value || !updated) return
-  shortlinks.value = shortlinks.value.map(link => {
+        link: editingShortlink.value.link,
+      },
+    },
+  );
+  if (!shortlinks.value || !updated) return;
+  shortlinks.value = shortlinks.value.map((link) => {
     if (link.id === updated.id) {
-      return updated
+      return updated;
     }
-    return link
-  })
-  toast('Shortlink updated')
-  setEditing(false)
-}
+    return link;
+  });
+  toast("Shortlink updated");
+  setEditing(false);
+};
 const deleteShortlink = async () => {
   await $fetch(`/api/links/${editingShortlink.value.short}`, {
-    method: 'DELETE',
+    method: "DELETE",
     body: {
       id: editingShortlink.value.id,
-      short: editingShortlink.value.short
-    }
-  })
-  if (!shortlinks.value) return
+      short: editingShortlink.value.short,
+    },
+  });
+  if (!shortlinks.value) return;
   shortlinks.value = shortlinks.value.filter(
-    link => link.id !== editingShortlink.value.id
-  )
-  toast('Shortlink deleted')
-  setEditing(false)
-}
+    (link) => link.id !== editingShortlink.value.id,
+  );
+  toast("Shortlink deleted");
+  setEditing(false);
+};
 
-const creating = ref(false)
+const creating = ref(false);
 const startCreating = () => {
-  creating.value = true
-}
-const createShort = ref('')
-const createLink = ref('')
+  creating.value = true;
+};
+const createShort = ref("");
+const createLink = ref("");
 const cancelCreate = () => {
-  creating.value = false
-  createShort.value = ''
-  createLink.value = ''
-}
+  creating.value = false;
+  createShort.value = "";
+  createLink.value = "";
+};
 const saveCreate = async () => {
-  const created = await $fetch<Shortlink>('/api/links', {
-    method: 'POST',
+  const created = await $fetch<Shortlink>("/api/links", {
+    method: "POST",
     body: {
       short: createShort.value,
-      link: createLink.value
-    }
-  })
+      link: createLink.value,
+    },
+  });
   if (created && shortlinks.value) {
-    shortlinks.value = [created, ...shortlinks.value]
+    shortlinks.value = [created, ...shortlinks.value];
   }
-  toast('Shortlink created')
-  cancelCreate()
-}
+  toast("Shortlink created");
+  cancelCreate();
+};
 
-const toastContainer = ref<HTMLDivElement | null>(null)
+const toastContainer = ref<HTMLDivElement | null>(null);
 const toast = (message: string) => {
-  const toast = document.createElement('div')
+  const toast = document.createElement("div");
   toast.classList.add(
-    'bg-zinc-800',
-    'text-white',
-    'rounded-md',
-    'p-2',
-    'cursor-pointer'
-  )
-  toast.innerText = message
+    "bg-zinc-800",
+    "text-white",
+    "rounded-md",
+    "p-2",
+    "cursor-pointer",
+  );
+  toast.innerText = message;
   toast.onclick = () => {
-    toast.remove()
-  }
-  toastContainer.value?.appendChild(toast)
+    toast.remove();
+  };
+  toastContainer.value?.appendChild(toast);
   setTimeout(() => {
-    toast.remove()
-  }, 3000)
-}
+    toast.remove();
+  }, 3000);
+};
 </script>
 
 <script lang="ts">
-import { useQRCode } from '@vueuse/integrations/useQRCode'
+import { useQRCode } from "@vueuse/integrations/useQRCode";
 
 export default {
   mounted() {
-    ;(this.$refs['search'] as HTMLInputElement).focus()
-  }
-}
+    (this.$refs["search"] as HTMLInputElement).focus();
+  },
+};
 
-let domain = ''
-if (typeof window !== 'undefined') {
-  domain = window.location.origin
+let domain = "";
+if (typeof window !== "undefined") {
+  domain = window.location.origin;
 }
-const qrcode = ref(false)
-let qrcodeValue = ''
-let qrcodeImage = useQRCode(`${domain}/${qrcodeValue}`)
+const qrcode = ref(false);
+let qrcodeValue = "";
+let qrcodeImage = useQRCode(`${domain}/${qrcodeValue}`);
 const setQrcode = (bool: boolean, value?: string) => {
-  qrcode.value = bool
+  qrcode.value = bool;
   if (!bool || !value) {
-    qrcodeValue = ''
+    qrcodeValue = "";
   } else {
-    qrcodeValue = value
-    qrcodeImage = useQRCode(`${domain}/${qrcodeValue}`)
+    qrcodeValue = value;
+    qrcodeImage = useQRCode(`${domain}/${qrcodeValue}`);
   }
-}
+};
 </script>
 
 <template lang="pug">
